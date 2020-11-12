@@ -1,31 +1,37 @@
 import React from "react";
+
 import { useRouter } from "next/router";
+import NextLink from "next/link";
+
 import { Formik, Form } from "formik";
 import {
   Box,
   Button,
+  Flex,
+  Link,
 } from "@chakra-ui/core";
+
 import { Wrapper } from "../components/atom/wrapper";
 import { InputField } from "../components/particle/inputField";
-import { useRegisterMutation } from "../generated/graphql";
+import { useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMaps";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 
-interface registerProps { }
+interface loginProps { }
 
-const Register: React.FC<registerProps> = ({ }) => {
+const Login: React.FC<loginProps> = ({ }) => {
   const router = useRouter();
-  const [, register] = useRegisterMutation()
+  const [, login] = useLoginMutation()
   return (
     <Wrapper small>
       <Formik
-        initialValues={{ username: "", password: "", email: "" }}
+        initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit= { async (values, { setErrors }) =>  {
-          const response = await register(values);
-          if (response.data?.register.errors) {
-            setErrors(toErrorMap(response.data.register.errors));
-          } else if (response.data?.register.user) {
+          const response = await login(values);
+          if (response.data?.login.errors) {
+            setErrors(toErrorMap(response.data.login.errors));
+          } else if (response.data?.login.user) {
             router.push("/");
           }
           return response
@@ -34,9 +40,10 @@ const Register: React.FC<registerProps> = ({ }) => {
         {({ isSubmitting }) => (
           <Form>
             <InputField
-              name="username"
-              placeholder="username"
-              label="Username"
+              name="usernameOrEmail"
+              placeholder="Username or Email"
+              label="Username or Email"
+              autoComplete="current-password"
               isRequired
             />
             <Box mt={4}>
@@ -46,23 +53,21 @@ const Register: React.FC<registerProps> = ({ }) => {
                 label="Password"
                 type="password"
                 isRequired
+                autoComplete="current-password"
               />
             </Box>
-            <Box mt={4}>
-              <InputField
-                name="email"
-                placeholder="Email"
-                label="Email"
-                isRequired
-              />
-            </Box>
+            <Flex mt={2}>
+              <NextLink href="/forgot-password">
+                <Link ml={"auto"}>forgot password?</Link>
+              </NextLink>
+            </Flex>
             <Button
               mt={4}
               type="submit"
               isLoading={isSubmitting}
               variantColor="teal"
             >
-              Register
+              Login
             </Button>
           </Form>
         )}
@@ -71,4 +76,4 @@ const Register: React.FC<registerProps> = ({ }) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(Register);
+export default withUrqlClient(createUrqlClient)(Login);
